@@ -1,18 +1,17 @@
 import {useAccount} from "wagmi";
-import {Seaport} from "@opensea/seaport-js";
 import React, {useContext} from "react";
-import {ethers} from "ethers";
 import {GlobalContext} from "./context/GlobalContext";
 import {fromN18} from "../../utils/formatter";
 
 export function Buy() {
 	const { address } = useAccount();
-	const { order } = useContext(GlobalContext);
-
-	const provider = new ethers.providers.Web3Provider(window.ethereum);
-	const seaport = new Seaport(provider);
+	const { order, seaport } = useContext(GlobalContext);
 
 	const fulfillOrder =  async () => {
+		if(!seaport || !order) {
+			return;
+		}
+
 		try {
 			const { executeAllActions: executeAllFulfillActions } =
 				await seaport.fulfillOrder({
@@ -23,7 +22,7 @@ export function Buy() {
 			const transaction = executeAllFulfillActions();
 
 			console.log(await transaction);
-		} catch (e: unknown) {
+		} catch (e: any) {
 			alert(e.message);
 		}
 	};

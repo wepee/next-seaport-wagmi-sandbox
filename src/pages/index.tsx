@@ -25,7 +25,7 @@ function Page() {
 					</div>
 					<div className="flex">
 						<Sell />
-						<Buy order={order}/>
+						<Buy />
 					</div>
 				</>
 			}

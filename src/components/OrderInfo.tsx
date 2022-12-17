@@ -3,7 +3,7 @@ import {ItemType} from "@opensea/seaport-js/lib/constants";
 import {fromN18} from "../../utils/formatter";
 import {OrderWithCounter} from "@opensea/seaport-js/lib/types";
 
-export function OrderInfo({order} : {order: OrderWithCounter}) {
+export function OrderInfo({order} : {order: OrderWithCounter | null}) {
 	return (
 		<div id="order-info" className="section">
 

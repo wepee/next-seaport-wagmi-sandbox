@@ -1,6 +1,6 @@
 import {useAccount} from "wagmi";
 import {FEES_SPLITTER_ADDRESS, PLATFORM_FEES} from "../../constants";
-import React, {useContext, useState} from "react";
+import React, {ChangeEvent, useContext, useState} from "react";
 import {n18} from "../../utils/formatter";
 import {GlobalContext} from "./context/GlobalContext";
 
@@ -12,7 +12,7 @@ export function Sell() {
 		price: 0.01
 	});
 
-	const inputsHandler = (e: EventTarget) =>{
+	const inputsHandler = (e: ChangeEvent<HTMLInputElement>) =>{
 		setInputField( {...inputField, [e.target.name]: e.target.value} );
 	};
 
@@ -25,6 +25,8 @@ export function Sell() {
 				{
 					offer: [
 						{
+							// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+							// @ts-ignore
 							itemType: tokenType,
 							token: tokenAddress,
 							identifier: tokenId,
@@ -47,7 +49,7 @@ export function Sell() {
 			const order = await executeAllActions();
 			setOrder(order);
 			localStorage.setItem("order", JSON.stringify(order));
-		} catch (e: unknown) {
+		} catch (e: any) {
 			alert(e.message);
 		}
 	};

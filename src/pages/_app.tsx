@@ -17,11 +17,12 @@ function App({ Component, pageProps }: AppProps) {
 		<WagmiConfig client={client}>
 			<RainbowKitProvider chains={chains}>
 				<ContextProvider>
-					<NextHead>
-						<title>Seaport Sandbox</title>
-					</NextHead>
-
-					{mounted && <Component {...pageProps} />}
+					<>
+						<NextHead>
+							<title>Seaport Sandbox</title>
+						</NextHead>
+						{mounted ? <Component {...pageProps} /> : undefined}
+					</>
 				</ContextProvider>
 			</RainbowKitProvider>
 		</WagmiConfig>

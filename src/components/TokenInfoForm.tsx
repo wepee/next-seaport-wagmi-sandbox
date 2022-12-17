@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ChangeEvent} from "react";
 import {ItemType} from "@opensea/seaport-js/lib/constants";
 import {useContext, useState} from "react";
 import {GlobalContext} from "./context/GlobalContext";
@@ -8,7 +8,7 @@ export function TokenInfoForm() {
 
 	const [inputField , setInputField] = useState(tokenData);
 
-	const inputsHandler = (e: EventTarget) =>{
+	const inputsHandler = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>{
 		setInputField( {...inputField, [e.target.name]: e.target.value} );
 	};
 
