@@ -1,25 +1,25 @@
-import { getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { configureChains, createClient } from 'wagmi'
-import { goerli, mainnet } from 'wagmi/chains'
-import { alchemyProvider } from 'wagmi/providers/alchemy'
+import { getDefaultWallets } from "@rainbow-me/rainbowkit";
+import { configureChains, createClient } from "wagmi";
+import { goerli, mainnet } from "wagmi/chains";
+import { alchemyProvider } from "wagmi/providers/alchemy";
 
 const { chains, provider, webSocketProvider } = configureChains(
-  [mainnet, ...(process.env.NODE_ENV === 'development' ? [goerli] : [])],
-  [
-    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY! }),
-  ],
-)
+	[mainnet, ...(process.env.NODE_ENV === "development" ? [goerli] : [])],
+	[
+		alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY! }),
+	],
+);
 
 const { connectors } = getDefaultWallets({
-  appName: 'My wagmi + RainbowKit App',
-  chains,
-})
+	appName: "My wagmi + RainbowKit App",
+	chains,
+});
 
 export const client = createClient({
-  autoConnect: true,
-  connectors,
-  provider,
-  webSocketProvider,
-})
+	autoConnect: true,
+	connectors,
+	provider,
+	webSocketProvider,
+});
 
-export { chains }
+export { chains };
