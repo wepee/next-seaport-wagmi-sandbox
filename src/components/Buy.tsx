@@ -3,28 +3,35 @@ import React from "react";
 import { StorageContext } from "../context/StorageContext";
 import { fromN18 } from "../../utils/formatter";
 import { SeaportContext } from "../context/SeaportContext";
-import { TokenData } from "./TokenInfoForm";
+import { BigNumber } from "ethers";
 
-export function Buy(props: { tokenData: TokenData | null }) {
-	const { order } = React.useContext(StorageContext);
+export function Buy() {
+	const [loading, setLoading] = React.useState(false);
+	const { order, saveOrder } = React.useContext(StorageContext);
 	const seaport = React.useContext(SeaportContext);
 	const { address } = useAccount();
 
 	const fulfillOrder =  async () => {
 		if(seaport === null || order === null) return;
 
+		setLoading(true);
+
 		try {
-			const { executeAllActions: executeAllFulfillActions } =
+			const { executeAllActions } =
 				await seaport.fulfillOrder({
 					order,
 					accountAddress: address,
 				});
 
-			const transaction = executeAllFulfillActions();
+			const transaction = await executeAllActions();
 
-			console.log(await transaction);
+			console.log(transaction);
+
+			saveOrder(null);
 		} catch (e: any) {
 			alert(e?.message);
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -39,13 +46,18 @@ export function Buy(props: { tokenData: TokenData | null }) {
 				<p>
 					{
 						//to get price + fees
-						order.parameters.consideration.reduce((acc, el) => {
-							return acc + + fromN18(el.startAmount);
-						}, 0)
+						fromN18(order.parameters.consideration.reduce((acc, el) => {
+							return acc.add(el.startAmount);
+						}, BigNumber.from(0)).toString())
 					} ETH
 				</p>
 
-				<button onClick={fulfillOrder}>Purchase</button>
+				<button onClick={fulfillOrder}>
+					{loading
+						? "Loading..."
+						: "Purchase"
+					}
+				</button>
 			</> : (
 				<b>No pending order</b>
 			)}

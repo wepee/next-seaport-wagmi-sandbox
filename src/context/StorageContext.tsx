@@ -1,14 +1,14 @@
-import React, { Dispatch, ReactNode, SetStateAction } from "react";
+import React, { ReactNode } from "react";
 import { OrderWithCounter } from "@opensea/seaport-js/lib/types";
 
 interface StorageContextProps {
   order: OrderWithCounter | null;
-  setOrder: Dispatch<SetStateAction<OrderWithCounter | null>>;
+  saveOrder: (order: OrderWithCounter | null) => void;
 }
 
 export const StorageContext = React.createContext<StorageContextProps>({
 	order: null,
-	setOrder: () => {
+	saveOrder: () => {
 		throw new Error("Missing StorageContextProvider in tree");
 	},
 });
@@ -22,8 +22,18 @@ export const StorageContextProvider = (props: { children?: ReactNode }) => {
 			setOrder(JSON.parse(localOrder));
 	}, []);
 
+	function saveOrder(order: OrderWithCounter | null) {
+		if (order !== null) {
+			localStorage.setItem("order", JSON.stringify(order));
+		} else {
+			localStorage.removeItem("order");
+		}
+
+		return setOrder(order);
+	}
+
 	return (
-		<StorageContext.Provider value={{order, setOrder}}>
+		<StorageContext.Provider value={{order, saveOrder}}>
 			{props.children}
 		</StorageContext.Provider>
 	);

@@ -1,38 +1,55 @@
-import { useAccount } from "wagmi";
-import { FEES_SPLITTER_ADDRESS, PLATFORM_FEES } from "../../constants";
+import { mainnet, useAccount, useNetwork } from "wagmi";
+import { FEES_SPLITTER_ADDRESS_GOERLI, FEES_SPLITTER_ADDRESS_MAINNET, PLATFORM_FEES, PLATFORM_FEES_PRECISION } from "../../constants";
 import React from "react";
 import { n18 } from "../../utils/formatter";
 import { SeaportContext } from "../context/SeaportContext";
 import { TokenData } from "./TokenInfoForm";
 import { StorageContext } from "../context/StorageContext";
+import { ItemType } from "@opensea/seaport-js/lib/constants";
 
-export function Sell(props: { tokenData: TokenData | null }) {
-	const [price, setPrice] = React.useState(0.01);
-	const { setOrder } = React.useContext(StorageContext);
+export function Sell({ tokenData }: { tokenData: TokenData | null }) {
+	const [price, setPrice] = React.useState("0.01");
+	const [loading, setLoading] = React.useState(false);
+	const { saveOrder } = React.useContext(StorageContext);
 	const seaport = React.useContext(SeaportContext);
 	const { address } = useAccount();
+	const { chain } = useNetwork();
 
-	const createOrder =  async () => {
-		if (seaport === null || props.tokenData === null) return;
+	async function createOrder() {
+		if (seaport === null || tokenData === null || loading) return;
+
+		setLoading(true);
 
 		try {
+			const priceEth = n18(price);
+			const fees = priceEth.mul(PLATFORM_FEES).div(PLATFORM_FEES_PRECISION);
+
 			const { executeAllActions } = await seaport.createOrder(
 				{
 					offer: [
-						{
-							itemType: props.tokenData.tokenType,
-							token: props.tokenData.tokenAddress,
-							identifier: props.tokenData.tokenId,
-						},
+						tokenData.tokenType === ItemType.ERC721
+							? {
+								itemType: ItemType.ERC721,
+								token: tokenData.tokenAddress,
+								identifier: tokenData.tokenId,
+							}
+							: {
+								itemType: ItemType.ERC1155,
+								token: tokenData.tokenAddress,
+								identifier: tokenData.tokenId,
+								amount: "1",
+							},
 					],
 					consideration: [
 						{
-							amount: n18(String(price * (1-PLATFORM_FEES))).toString(),
+							amount: priceEth.sub(fees).toString(),
 							recipient: address,
 						},
 						{
-							amount: n18(String(price * PLATFORM_FEES)).toString(),
-							recipient: FEES_SPLITTER_ADDRESS,
+							amount: fees.toString(),
+							recipient: chain === mainnet
+								? FEES_SPLITTER_ADDRESS_MAINNET
+								: FEES_SPLITTER_ADDRESS_GOERLI,
 						},
 					],
 				},
@@ -40,28 +57,36 @@ export function Sell(props: { tokenData: TokenData | null }) {
 			);
 
 			const order = await executeAllActions();
-			setOrder(order);
-			localStorage.setItem("order", JSON.stringify(order));
+			saveOrder(order);
 		} catch (e: any) {
-			alert(e.message);
+			alert(e?.message);
+		} finally {
+			setLoading(false);
 		}
-	};
+	}
 
 	return (
 		<div id="sell" className="section">
-
 			<h2>Sell a token</h2>
 			<p>Here you can sign a transaction to create an order for the selected token</p>
 
-			<label htmlFor="price">Price (in ETH)</label><br/>
+			<label htmlFor="price">Price (in ETH)</label>
 			<input
 				type="number"
 				name="price"
-				onChange={(e) => setPrice(parseFloat(e.target.value))}
-				placeholder="price in ETH"
+				onChange={(e) => setPrice(e.target.value)}
+				placeholder="Price (in ETH)"
 				value={price}
-			/><br/><br/>
-			<button onClick={createOrder}>Sell</button>
+			/>
+
+			<br/>
+
+			<button onClick={createOrder} disabled={tokenData === null || price === "" || loading}>
+				{loading
+					? "Loading..."
+					: "Sell"
+				}
+			</button>
 		</div>
 	);
 }
