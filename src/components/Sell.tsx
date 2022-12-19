@@ -1,44 +1,37 @@
-import {useAccount} from "wagmi";
-import {FEES_SPLITTER_ADDRESS, PLATFORM_FEES} from "../../constants";
-import React, {ChangeEvent, useContext, useState} from "react";
-import {n18} from "../../utils/formatter";
-import {GlobalContext} from "./context/GlobalContext";
+import { useAccount } from "wagmi";
+import { FEES_SPLITTER_ADDRESS, PLATFORM_FEES } from "../../constants";
+import React from "react";
+import { n18 } from "../../utils/formatter";
+import { SeaportContext } from "../context/SeaportContext";
+import { TokenData } from "./TokenInfoForm";
+import { StorageContext } from "../context/StorageContext";
 
-export function Sell() {
+export function Sell(props: { tokenData: TokenData | null }) {
+	const [price, setPrice] = React.useState(0.01);
+	const { setOrder } = React.useContext(StorageContext);
+	const seaport = React.useContext(SeaportContext);
 	const { address } = useAccount();
-	const { tokenData: { tokenAddress, tokenId, tokenType }, setOrder, seaport } = useContext(GlobalContext);
-
-	const [inputField , setInputField] = useState({
-		price: 0.01
-	});
-
-	const inputsHandler = (e: ChangeEvent<HTMLInputElement>) =>{
-		setInputField( {...inputField, [e.target.name]: e.target.value} );
-	};
 
 	const createOrder =  async () => {
-		if(!seaport) {
-			return;
-		}
+		if (seaport === null || props.tokenData === null) return;
+
 		try {
 			const { executeAllActions } = await seaport.createOrder(
 				{
 					offer: [
 						{
-							// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-							// @ts-ignore
-							itemType: tokenType,
-							token: tokenAddress,
-							identifier: tokenId,
+							itemType: props.tokenData.tokenType,
+							token: props.tokenData.tokenAddress,
+							identifier: props.tokenData.tokenId,
 						},
 					],
 					consideration: [
 						{
-							amount: n18(String(inputField.price * (1-PLATFORM_FEES))).toString(),
+							amount: n18(String(price * (1-PLATFORM_FEES))).toString(),
 							recipient: address,
 						},
 						{
-							amount: n18(String(inputField.price * PLATFORM_FEES)).toString(),
+							amount: n18(String(price * PLATFORM_FEES)).toString(),
 							recipient: FEES_SPLITTER_ADDRESS,
 						},
 					],
@@ -64,9 +57,9 @@ export function Sell() {
 			<input
 				type="number"
 				name="price"
-				onChange={inputsHandler}
+				onChange={(e) => setPrice(parseFloat(e.target.value))}
 				placeholder="price in ETH"
-				value={inputField.price}
+				value={price}
 			/><br/><br/>
 			<button onClick={createOrder}>Sell</button>
 		</div>

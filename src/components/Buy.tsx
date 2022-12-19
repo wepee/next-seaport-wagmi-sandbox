@@ -1,16 +1,17 @@
-import {useAccount} from "wagmi";
-import React, {useContext} from "react";
-import {GlobalContext} from "./context/GlobalContext";
-import {fromN18} from "../../utils/formatter";
+import { useAccount } from "wagmi";
+import React from "react";
+import { StorageContext } from "../context/StorageContext";
+import { fromN18 } from "../../utils/formatter";
+import { SeaportContext } from "../context/SeaportContext";
+import { TokenData } from "./TokenInfoForm";
 
-export function Buy() {
+export function Buy(props: { tokenData: TokenData | null }) {
+	const { order } = React.useContext(StorageContext);
+	const seaport = React.useContext(SeaportContext);
 	const { address } = useAccount();
-	const { order, seaport } = useContext(GlobalContext);
 
 	const fulfillOrder =  async () => {
-		if(!seaport || !order) {
-			return;
-		}
+		if(seaport === null || order === null) return;
 
 		try {
 			const { executeAllActions: executeAllFulfillActions } =
@@ -23,34 +24,31 @@ export function Buy() {
 
 			console.log(await transaction);
 		} catch (e: any) {
-			alert(e.message);
+			alert(e?.message);
 		}
 	};
 
 	return (
 		<div id="buy" className="section" >
-
 			<h2>Purchase the Token</h2>
-			{
-				order ?
-					<>
-						<p>Fulfill Order</p>
 
-						<b>Price</b>
-						<p>
-							{
-								//to get price + fees
-								order.parameters.consideration.reduce((acc, el) => {
-									return acc + +fromN18(el.startAmount);
-								}, 0)
-							} ETH
-						</p>
+			{order ? <>
+				<p>Fulfill Order</p>
 
-						<button onClick={fulfillOrder}>Purchase</button>
-					</>
-					:
-					<b>No pending order</b>
-			}
+				<b>Price</b>
+				<p>
+					{
+						//to get price + fees
+						order.parameters.consideration.reduce((acc, el) => {
+							return acc + + fromN18(el.startAmount);
+						}, 0)
+					} ETH
+				</p>
+
+				<button onClick={fulfillOrder}>Purchase</button>
+			</> : (
+				<b>No pending order</b>
+			)}
 		</div>
 	);
 }

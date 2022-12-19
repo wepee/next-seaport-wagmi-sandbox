@@ -1,34 +1,39 @@
-import React, {useContext} from "react";
+import React from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
+import NextHead from "next/head";
 
-import {Sell, Buy, TokenInfoForm, OrderInfo} from "../components";
-import {GlobalContext} from "../components/context/GlobalContext";
+import { Sell, Buy, TokenInfoForm, OrderInfo, TokenData } from "../components";
+import { StorageContext } from "../context/StorageContext";
 
 function Page() {
+	const [mounted, setMounted] = React.useState(false);
+	const [tokenData, setTokenData] = React.useState<TokenData | null>(null);
+	const { order } = React.useContext(StorageContext);
 	const { isConnected } = useAccount();
 
-	const { order } = useContext(GlobalContext);
+	React.useEffect(() => setMounted(true), []);
 
 	return (
 		<>
-			<h1>Wagmi + RainbowKit + Next.js + Seaport</h1>
+			<NextHead>
+				<title>Seaport Sandbox</title>
+			</NextHead>
+
+			<h1>Next.js + Wagmi + RainbowKit + Seaport</h1>
 
 			<ConnectButton />
 
-			{
-				isConnected &&
-				<>
-					<div className="flex">
-						<TokenInfoForm />
-						<OrderInfo order={order} />
-					</div>
-					<div className="flex">
-						<Sell />
-						<Buy />
-					</div>
-				</>
-			}
+			{mounted && isConnected && <>
+				<div className="flex">
+					<TokenInfoForm onChangeToken={setTokenData} />
+					<OrderInfo order={order} />
+				</div>
+				<div className="flex">
+					<Sell tokenData={tokenData} />
+					<Buy tokenData={tokenData} />
+				</div>
+			</>}
 		</>
 	);
 }
