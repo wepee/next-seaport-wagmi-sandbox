@@ -4,10 +4,11 @@ import { StorageContext } from "../context/StorageContext";
 import { fromN18 } from "../../utils/formatter";
 import { SeaportContext } from "../context/SeaportContext";
 import { BigNumber } from "ethers";
+import { OrderWithCounter } from "@opensea/seaport-js/lib/types";
 
-export function Buy() {
+export function Buy({ order }: { order: OrderWithCounter | null }) {
 	const [loading, setLoading] = React.useState(false);
-	const { order, saveOrder } = React.useContext(StorageContext);
+	const { saveOrder } = React.useContext(StorageContext);
 	const seaport = React.useContext(SeaportContext);
 	const { address } = useAccount();
 
@@ -44,12 +45,12 @@ export function Buy() {
 
 				<b>Price</b>
 				<p>
-					{
-						//to get price + fees
-						fromN18(order.parameters.consideration.reduce((acc, el) => {
+					{fromN18(
+						order.parameters.consideration.reduce((acc, el) => {
 							return acc.add(el.startAmount);
-						}, BigNumber.from(0)).toString())
-					} ETH
+						}, BigNumber.from(0)).toString()
+					)}
+					ETH
 				</p>
 
 				<button onClick={fulfillOrder}>

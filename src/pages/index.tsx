@@ -31,7 +31,7 @@ function Page() {
 				</div>
 				<div className="flex">
 					<Sell tokenData={tokenData} />
-					<Buy tokenData={tokenData} />
+					<Buy order={order} />
 				</div>
 			</>}
 		</>

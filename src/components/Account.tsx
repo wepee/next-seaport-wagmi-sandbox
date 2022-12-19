@@ -6,9 +6,6 @@ export function Account() {
 	const { data: ensName } = useEnsName({ address });
 
 	return (
-		<p>
-			{ensName ?? address}
-			{ensName ? ` (${address})` : null}
-		</p>
+		<p>{ensName ? `${ensName} (${address})` : address}</p>
 	);
 }
