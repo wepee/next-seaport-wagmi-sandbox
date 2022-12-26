@@ -33,7 +33,7 @@ export function MakeOffer({ tokenData }: { tokenData: TokenData | null }) {
 					offer: [
 						{
 							amount: priceEth.toString(),
-							token: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" //WETH_ADDRESS,
+							token: WETH_ADDRESS
 						},
 
 					],
@@ -53,7 +53,6 @@ export function MakeOffer({ tokenData }: { tokenData: TokenData | null }) {
 								recipient: address
 							},
 						{
-							itemType: 1, //ERC20
 							amount: fees.toString(),
 							token: WETH_ADDRESS,
 							recipient: FEES_SPLITTER_ADDRESS,
