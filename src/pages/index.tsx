@@ -3,7 +3,8 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import NextHead from "next/head";
 
-import { Sell, Buy, TokenInfoForm, OrderInfo, TokenData } from "../components";
+import { Sell, Buy, TokenInfoForm, OrderInfo, MakeOffer, AcceptOffer, TokenData } from "../components";
+
 import { StorageContext } from "../context/StorageContext";
 
 function Page() {
@@ -32,6 +33,10 @@ function Page() {
 				<div className="flex">
 					<Sell tokenData={tokenData} />
 					<Buy order={order} />
+				</div>
+				<div className="flex">
+					<MakeOffer tokenData={tokenData} />
+					<AcceptOffer order={order} />
 				</div>
 			</>}
 		</>

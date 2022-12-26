@@ -2,7 +2,8 @@ import { useAccount } from "wagmi";
 import {
 	FEES_SPLITTER_ADDRESS,
 	PLATFORM_FEES,
-	PLATFORM_FEES_PRECISION
+	PLATFORM_FEES_PRECISION,
+	WETH_ADDRESS,
 } from "../../constants";
 import React from "react";
 import { n18 } from "../../utils/formatter";
@@ -11,7 +12,7 @@ import { TokenData } from "./TokenInfoForm";
 import { StorageContext } from "../context/StorageContext";
 import { ItemType } from "@opensea/seaport-js/lib/constants";
 
-export function Sell({ tokenData }: { tokenData: TokenData | null }) {
+export function MakeOffer({ tokenData }: { tokenData: TokenData | null }) {
 	const [price, setPrice] = React.useState("0.01");
 	const [loading, setLoading] = React.useState(false);
 	const { saveOrder } = React.useContext(StorageContext);
@@ -30,28 +31,33 @@ export function Sell({ tokenData }: { tokenData: TokenData | null }) {
 			const { executeAllActions } = await seaport.createOrder(
 				{
 					offer: [
+						{
+							amount: priceEth.toString(),
+							token: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" //WETH_ADDRESS,
+						},
+
+					],
+					consideration: [
 						tokenData.tokenType === ItemType.ERC721
 							? {
 								itemType: ItemType.ERC721,
 								token: tokenData.tokenAddress,
 								identifier: tokenData.tokenId,
+								recipient: address
 							}
 							: {
 								itemType: ItemType.ERC1155,
 								token: tokenData.tokenAddress,
 								identifier: tokenData.tokenId,
 								amount: "1",
+								recipient: address
 							},
-					],
-					consideration: [
 						{
-							amount: priceEth.sub(fees).toString(),
-							recipient: address,
-						},
-						{
+							itemType: 1, //ERC20
 							amount: fees.toString(),
-							recipient: FEES_SPLITTER_ADDRESS
-						},
+							token: WETH_ADDRESS,
+							recipient: FEES_SPLITTER_ADDRESS,
+						}
 					],
 				},
 				address,
@@ -68,7 +74,7 @@ export function Sell({ tokenData }: { tokenData: TokenData | null }) {
 
 	return (
 		<div id="sell" className="section">
-			<h2>Sell a token</h2>
+			<h2>Make an offer</h2>
 			<p>Here you can sign a transaction to create an order for the selected token</p>
 
 			<label htmlFor="price">Price (in ETH)</label>
@@ -85,7 +91,7 @@ export function Sell({ tokenData }: { tokenData: TokenData | null }) {
 			<button onClick={createOrder} disabled={tokenData === null || price === "" || loading}>
 				{loading
 					? "Loading..."
-					: "Sell"
+					: "Make an offer"
 				}
 			</button>
 		</div>
