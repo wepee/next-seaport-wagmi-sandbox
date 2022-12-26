@@ -21,6 +21,7 @@
 
 # misc
 
+.idea
 .DS_Store
 \*.pem
 
