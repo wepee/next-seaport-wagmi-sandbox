@@ -1,11 +1,6 @@
 import React from "react";
 import { ItemType } from "@opensea/seaport-js/lib/constants";
-
-export interface TokenData {
-	tokenType: ItemType.ERC721 | ItemType.ERC1155;
-	tokenAddress: string;
-	tokenId: string;
-}
+import type { TokenData } from "../services/seaport.service";
 
 export function TokenInfoForm({ onChangeToken }: { onChangeToken?: (tokenData: TokenData | null) => void }) {
 	// const [tokenType, setTokenType] = React.useState<ItemType | "">("");
@@ -31,9 +26,9 @@ export function TokenInfoForm({ onChangeToken }: { onChangeToken?: (tokenData: T
 			return onChangeToken(null); // Invalid token ID.
 
 		onChangeToken({
-			tokenType,
-			tokenAddress,
-			tokenId,
+			type: tokenType,
+			address: tokenAddress,
+			id: tokenId,
 		});
 	}, [onChangeToken, tokenType, tokenAddress, tokenId]);
 

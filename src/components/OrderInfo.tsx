@@ -1,6 +1,6 @@
 import React from "react";
 import { ItemType } from "@opensea/seaport-js/lib/constants";
-import { fromN18 } from "../../utils/formatter";
+import { fromN18 } from "../utils/formatter";
 import { OrderWithCounter } from "@opensea/seaport-js/lib/types";
 
 export function OrderInfo({order} : {order: OrderWithCounter | null}) {

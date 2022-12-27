@@ -1,16 +1,9 @@
 import { useAccount } from "wagmi";
-import {
-	FEES_SPLITTER_ADDRESS,
-	PLATFORM_FEES,
-	PLATFORM_FEES_PRECISION,
-	WETH_ADDRESS,
-} from "../../constants";
 import React from "react";
-import { n18 } from "../../utils/formatter";
 import { SeaportContext } from "../context/SeaportContext";
-import { TokenData } from "./TokenInfoForm";
+import type { TokenData } from "../services/seaport.service";
 import { StorageContext } from "../context/StorageContext";
-import { ItemType } from "@opensea/seaport-js/lib/constants";
+import {makeOffer} from "../services/seaport.service";
 
 export function MakeOffer({ tokenData }: { tokenData: TokenData | null }) {
 	const [price, setPrice] = React.useState("0.01");
@@ -19,56 +12,20 @@ export function MakeOffer({ tokenData }: { tokenData: TokenData | null }) {
 	const seaport = React.useContext(SeaportContext);
 	const { address } = useAccount();
 
-	async function createOrder() {
-		if (seaport === null || tokenData === null || loading) return;
-
-		setLoading(true);
+	async function makeAnOffer() {
+		if (seaport === null || tokenData === null || loading || address === undefined) return;
 
 		try {
-			const priceEth = n18(price);
-			const fees = priceEth.mul(PLATFORM_FEES).div(PLATFORM_FEES_PRECISION);
-
-			const { executeAllActions } = await seaport.createOrder(
-				{
-					offer: [
-						{
-							amount: priceEth.toString(),
-							token: WETH_ADDRESS
-						},
-
-					],
-					consideration: [
-						tokenData.tokenType === ItemType.ERC721
-							? {
-								itemType: ItemType.ERC721,
-								token: tokenData.tokenAddress,
-								identifier: tokenData.tokenId,
-								recipient: address
-							}
-							: {
-								itemType: ItemType.ERC1155,
-								token: tokenData.tokenAddress,
-								identifier: tokenData.tokenId,
-								amount: "1",
-								recipient: address
-							},
-						{
-							amount: fees.toString(),
-							token: WETH_ADDRESS,
-							recipient: FEES_SPLITTER_ADDRESS,
-						}
-					],
-				},
-				address,
-			);
-
-			const order = await executeAllActions();
+			setLoading(true);
+			const order = await makeOffer(address, tokenData, price);
 			saveOrder(order);
-		} catch (e: any) {
-			alert(e?.message);
+		} catch (e) {
+			console.log(e);
+			alert(e);
 		} finally {
 			setLoading(false);
 		}
+
 	}
 
 	return (
@@ -87,7 +44,7 @@ export function MakeOffer({ tokenData }: { tokenData: TokenData | null }) {
 
 			<br/>
 
-			<button onClick={createOrder} disabled={tokenData === null || price === "" || loading}>
+			<button onClick={makeAnOffer} disabled={tokenData === null || price === "" || loading}>
 				{loading
 					? "Loading..."
 					: "Make an offer"

@@ -1,15 +1,9 @@
 import { useAccount } from "wagmi";
-import {
-	FEES_SPLITTER_ADDRESS,
-	PLATFORM_FEES,
-	PLATFORM_FEES_PRECISION
-} from "../../constants";
 import React from "react";
-import { n18 } from "../../utils/formatter";
 import { SeaportContext } from "../context/SeaportContext";
-import { TokenData } from "./TokenInfoForm";
+import type { TokenData } from "../services/seaport.service";
 import { StorageContext } from "../context/StorageContext";
-import { ItemType } from "@opensea/seaport-js/lib/constants";
+import {sellAtPrice} from "../services/seaport.service";
 
 export function Sell({ tokenData }: { tokenData: TokenData | null }) {
 	const [price, setPrice] = React.useState("0.01");
@@ -19,45 +13,12 @@ export function Sell({ tokenData }: { tokenData: TokenData | null }) {
 	const { address } = useAccount();
 
 	async function createOrder() {
-		if (seaport === null || tokenData === null || loading) return;
+		if (seaport === null || tokenData === null || loading || address === undefined) return;
 
 		setLoading(true);
 
 		try {
-			const priceEth = n18(price);
-			const fees = priceEth.mul(PLATFORM_FEES).div(PLATFORM_FEES_PRECISION);
-
-			const { executeAllActions } = await seaport.createOrder(
-				{
-					offer: [
-						tokenData.tokenType === ItemType.ERC721
-							? {
-								itemType: ItemType.ERC721,
-								token: tokenData.tokenAddress,
-								identifier: tokenData.tokenId,
-							}
-							: {
-								itemType: ItemType.ERC1155,
-								token: tokenData.tokenAddress,
-								identifier: tokenData.tokenId,
-								amount: "1",
-							},
-					],
-					consideration: [
-						{
-							amount: priceEth.sub(fees).toString(),
-							recipient: address,
-						},
-						{
-							amount: fees.toString(),
-							recipient: FEES_SPLITTER_ADDRESS
-						},
-					],
-				},
-				address,
-			);
-
-			const order = await executeAllActions();
+			const order = await sellAtPrice(address, tokenData, price);
 			saveOrder(order);
 		} catch (e: any) {
 			alert(e?.message);

@@ -1,10 +1,11 @@
 import { useAccount } from "wagmi";
 import React from "react";
 import { StorageContext } from "../context/StorageContext";
-import { fromN18 } from "../../utils/formatter";
+import { fromN18 } from "../utils/formatter";
 import { SeaportContext } from "../context/SeaportContext";
 import { BigNumber } from "ethers";
 import { OrderWithCounter } from "@opensea/seaport-js/lib/types";
+import {acceptOffer} from "../services/seaport.service";
 
 export function Buy({ order }: { order: OrderWithCounter | null }) {
 	const [loading, setLoading] = React.useState(false);
@@ -13,18 +14,12 @@ export function Buy({ order }: { order: OrderWithCounter | null }) {
 	const { address } = useAccount();
 
 	const fulfillOrder =  async () => {
-		if(seaport === null || order === null) return;
+		if(seaport === null || order === null || address === undefined) return;
 
 		setLoading(true);
 
 		try {
-			const { executeAllActions } =
-				await seaport.fulfillOrder({
-					order,
-					accountAddress: address,
-				});
-
-			const transaction = await executeAllActions();
+			const transaction = await acceptOffer(address, order);
 
 			console.log(transaction);
 
